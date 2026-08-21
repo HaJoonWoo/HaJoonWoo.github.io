@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REPO://VISUALIZER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0B1015;
+    --bg-raised: #121A22;
+    --bg-card: #141D26;
+    --grid-line: rgba(95, 217, 196, 0.07);
+    --cyan: #5FD9C4;
+    --cyan-dim: rgba(95, 217, 196, 0.35);
+    --amber: #F2A65A;
+    --text: #EAF2F1;
+    --text-muted: #7C8B94;
+    --text-faint: #4A5860;
+    --danger: #E8735A;
+    --radius: 2px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 100% 42px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 42px 100%,
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+
+  ::selection{ background:var(--cyan); color:#0B1015; }
+
+  a{ color:var(--cyan); }
+
+  :focus-visible{
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+  }
+
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .eyebrow .dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(95,217,196,0.15);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.35; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .eyebrow .dot{ animation:none; }
+  }
+
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size: clamp(32px, 6vw, 56px);
+    line-height: 1.05;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h1 .slash{ color: var(--cyan); }
+  h1 .caret{
+    display:inline-block;
+    width: 0.5ch;
+    background: var(--amber);
+    animation: blink 1.1s steps(1) infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+  @media (prefers-reduced-motion: reduce){
+    h1 .caret{ animation:none; }
+  }
+
+  .hero p.desc{
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height:1.7;
+    max-width: 56ch;
+    margin: 0;
+  }
+
+  .status-line{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-top: 20px;
+    min-height: 16px;
+  }
+  .status-line.error{ color: var(--danger); }
+  .status-line.ok{ color: var(--cyan); }
+
+  /* ---------- GRID ---------- */
+  .stats-bar{
+    display:flex;
+    gap: 28px;
+    margin: 40px 0 24px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    font-family:'JetBrains Mono', monospace;
+  }
+  .stat .num{
+    font-size: 22px;
+    color: var(--text);
+    font-weight:700;
+  }
+  .stat .lbl{
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .card{
+    position:relative;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 20px;
+    display:flex;
+    flex-direction:column;
+    gap: 12px;
+    text-decoration:none;
+    color:inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover{
+    border-color: var(--cyan-dim);
+    transform: translateY(-2px);
+  }
+  /* corner brackets, HUD-select style */
+  .card::before, .card::after{
+    content:"";
+    position:absolute;
+    width: 10px; height: 10px;
+    border-color: var(--cyan);
+    border-style: solid;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .card::before{
+    top:-1px; left:-1px;
+    border-width: 2px 0 0 2px;
+  }
+  .card::after{
+    bottom:-1px; right:-1px;
+    border-width: 0 2px 2px 0;
+  }
+  .card:hover::before, .card:hover::after{ opacity: 1; }
+
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 10px;
+  }
+  .card-name{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size: 15px;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .card-badge{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    border: 1px solid rgba(242,166,90,0.35);
+    border-radius: var(--radius);
+    padding: 2px 6px;
+    white-space:nowrap;
+  }
+
+  .card-desc{
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    min-height: 20px;
+    flex:1;
+  }
+
+  .card-meta{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-faint);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 12px;
+  }
+  .lang{
+    display:flex;
+    align-items:center;
+    gap: 6px;
+  }
+  .lang .swatch{
+    width:8px; height:8px; border-radius:50%;
+    background: var(--cyan);
+  }
+
+  .empty, .loading{
+    font-family:'JetBrains Mono', monospace;
+    color: var(--text-faint);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+
+  footer{
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-faint);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow"><span class="dot"></span> SYSTEM // REPOSITORY INDEX</div>
+    <h1>HAJOONWOO<span class="slash">://</span>REPOS<span class="caret"></span></h1>
+    <p class="desc">GitHub 계정 <strong style="color:var(--cyan)">HaJoonWoo</strong>의 공개 저장소를 자동으로 불러와 정렬합니다. 페이지가 열리는 즉시 GitHub API를 호출합니다.</p>
+    <div class="status-line" id="status-line">BOOTING...</div>
+  </header>
+
+  <div class="stats-bar" id="stats-bar" style="display:none;">
+    <div class="stat"><div class="num" id="stat-count">0</div><div class="lbl">Repos</div></div>
+    <div class="stat"><div class="num" id="stat-stars">0</div><div class="lbl">Total Stars</div></div>
+    <div class="stat"><div class="num" id="stat-lang">-</div><div class="lbl">Top Language</div></div>
+  </div>
+
+  <main class="grid" id="grid">
+    <div class="loading">불러오는 중...</div>
+  </main>
+
+  <footer>
+    <span>DATA SOURCE: api.github.com</span>
+    <span id="footer-time">-</span>
+  </footer>
+
+</div>
+
+<script>
+  // 여기 아이디만 바꾸면 다른 계정의 저장소를 보여줄 수 있습니다.
+  const GITHUB_USERNAME = 'HaJoonWoo';
+
+  const grid = document.getElementById('grid');
+  const statusLine = document.getElementById('status-line');
+  const statsBar = document.getElementById('stats-bar');
+  const statCount = document.getElementById('stat-count');
+  const statStars = document.getElementById('stat-stars');
+  const statLang = document.getElementById('stat-lang');
+  const footerTime = document.getElementById('footer-time');
+
+  function setStatus(text, type){
+    statusLine.textContent = text;
+    statusLine.className = 'status-line' + (type ? ' ' + type : '');
+  }
+
+  function timeAgo(dateStr){
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / 86400000);
+    if(days < 1) return 'today';
+    if(days < 30) return days + 'd ago';
+    if(days < 365) return Math.floor(days/30) + 'mo ago';
+    return Math.floor(days/365) + 'y ago';
+  }
+
+  async function fetchRepos(){
+    setStatus('FETCHING /users/' + GITHUB_USERNAME + '/repos ...');
+    grid.innerHTML = '<div class="loading">불러오는 중...</div>';
+    statsBar.style.display = 'none';
+
+    try{
+      const res = await fetch('https://api.github.com/users/' + encodeURIComponent(GITHUB_USERNAME) + '/repos?sort=updated&per_page=100');
+      if(!res.ok){
+        throw new Error(res.status === 404 ? '사용자를 찾을 수 없습니다.' : 'API 오류 (' + res.status + ')');
+      }
+      const repos = await res.json();
+
+      if(!Array.isArray(repos) || repos.length === 0){
+        grid.innerHTML = '<div class="empty">공개 저장소가 없습니다.</div>';
+        setStatus('OK: 0 repos found.', 'ok');
+        return;
+      }
+
+      renderRepos(repos);
+      setStatus('OK: ' + repos.length + ' repos loaded.', 'ok');
+      footerTime.textContent = 'LAST FETCH: ' + new Date().toLocaleTimeString();
+    }catch(err){
+      grid.innerHTML = '<div class="empty">불러오지 못했습니다.</div>';
+      setStatus('ERROR: ' + err.message, 'error');
+    }
+  }
+
+  function renderRepos(repos){
+    grid.innerHTML = '';
+
+    let totalStars = 0;
+    const langCount = {};
+
+    repos.forEach(r => {
+      totalStars += r.stargazers_count || 0;
+      if(r.language){
+        langCount[r.language] = (langCount[r.language] || 0) + 1;
+      }
+
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = r.html_url;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="card-name">${escapeHtml(r.name)}</span>
+          ${r.fork ? '<span class="card-badge">FORK</span>' : ''}
+        </div>
+        <div class="card-desc">${escapeHtml(r.description || '설명 없음')}</div>
+        <div class="card-meta">
+          <span class="lang"><span class="swatch"></span>${escapeHtml(r.language || '-')}</span>
+          <span>★ ${r.stargazers_count}</span>
+          <span>${timeAgo(r.updated_at)}</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    const topLang = Object.entries(langCount).sort((a,b) => b[1]-a[1])[0];
+
+    statCount.textContent = repos.length;
+    statStars.textContent = totalStars;
+    statLang.textContent = topLang ? topLang[0] : '-';
+    statsBar.style.display = 'flex';
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  fetchRepos();
+</script>
+
+</body>
+</html>
